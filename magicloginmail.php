@@ -30,3 +30,6 @@ if ( ! class_exists( 'MagicLoginMail' ) ) {
 	require_once( dirname( __FILE__ ) . '/lib/class-magicloginmail.php' );
 }
 
+if ( ! defined( 'MAGIC_LOGIN_MAIL_PLUGIN_FILE' ) ) {
+            define( 'MAGIC_LOGIN_MAIL_PLUGIN_FILE', __FILE__ );
+}

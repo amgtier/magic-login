@@ -35,6 +35,8 @@ class MagicLoginMail {
 
 		add_action( 'init', array( $this, 'autologin_via_url' ) );
 		add_action( 'magic_email_send', array( $this, 'send_link' ), 10, 2 );
+        add_action( 'edit_user_profile', array( $this, 'create_link' ), 10, 2);
+        add_action( 'wp_ajax_magic_login_mail_create_link', array( $this, 'ajax_create_link' ), 10);
 		add_shortcode( 'magic_login', array( $this, 'front_end_login' ) );
 
 	}
@@ -269,6 +271,36 @@ class MagicLoginMail {
 
 	}
 
+    public function create_link( $user ) {
+        wp_enqueue_script( 'magin-login-mail-create-link', plugin_dir_url( MAGIC_LOGIN_MAIL_PLUGIN_FILE ) . 'lib/static/script.js', [ 'jquery' ], null, true );
+        $ajax_url = admin_url( 'admin-ajax.php' );
+        ob_start();
+?>
+        <h3>Magic Login</h3>
+        <button type="button" class="button button-secondary" id="magic-login-mail-create-login-link" data-url="<?php echo $ajax_url; ?>" data-uid="<?php echo $user->ID; ?>">Create Login Link</button>
+<?php
+        echo ob_get_clean();
+        return;
+    }
+
+    public function ajax_create_link( ) {
+        $message = "";
+        $is_success = false;
+        if( get_userdata( $_POST[ "uid" ] ) === false ){
+            $message = $_POST[ "uid" ] . " does not exist.";
+        } else {
+            $is_success = true;
+            ### TODO: add login mail url to admin option
+            add_filter( 'magic_login_mail_url', fn() => "https://www.vatroc.net/log-in/");
+            add_filter( 'magic_login_mail_expiration', fn() => 60 * 24);
+            $message = $this->generate_url_by_user_id( $_POST[ "uid" ] );
+            $message .= " Expiration: " . date("Y-m-d H:i:s T",  time() + 60 * apply_filters( 'magic_login_mail_expiration', 10 ) );
+        }
+        $data = [ "success" => $is_success, "data" => $message ];
+        echo json_encode($data);
+        wp_die();
+    }
+
 	/** ==================================================
 	 * Check if the account is valid from the email address.
 	 *
@@ -287,23 +319,28 @@ class MagicLoginMail {
 
 	}
 
+	private function generate_url( $email ) {
+
+		/* get user id */
+		$user = get_user_by( 'email', $email );
+        return $this->generate_url_by_user_id( $user->ID );
+    }
+
 	/** ==================================================
 	 * Generates unique URL based on UID and token
 	 *
 	 * @param string $email  email.
 	 * @since 1.00
 	 */
-	private function generate_url( $email ) {
+	private function generate_url_by_user_id( $uid ) {
 
-		/* get user id */
-		$user = get_user_by( 'email', $email );
-		$token = $this->create_onetime_token( 'magic_login_mail_' . $user->ID, $user->ID );
+		$token = $this->create_onetime_token( 'magic_login_mail_' . $uid, $uid );
 
 		$arr_params = array( 'magic_login_mail_error_token', 'uid', 'token' );
 		$url = apply_filters( 'magic_login_mail_url', remove_query_arg( $arr_params, $this->curpageurl() ) );
 
 		$url_params = array(
-			'uid' => $user->ID,
+			'uid' => $uid,
 			'token' => $token,
 		);
 		$url = add_query_arg( $url_params, $url );
