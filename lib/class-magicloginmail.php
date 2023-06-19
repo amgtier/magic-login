@@ -98,7 +98,7 @@ class MagicLoginMail {
 				$html .= '<p style="background-color: ' . esc_attr( $magic_login_mail_invalid_token_error_back_color ) . ';">' . esc_html( $magic_login_mail_invalid_token_error ) . '</p>';
 			}
 
-			$label = apply_filters( 'magic_login_mail_form_label', __( 'Login with email', 'magic-login-mail' ) );
+			$label = apply_filters( 'magic_login_mail_form_label', __( 'Login with', 'magic-login-mail' ) );
 			$label_class_name = apply_filters( 'magic_login_mail_label_class_name', null );
 			$input_class_name = apply_filters( 'magic_login_mail_input_class_name', null );
 			$input_size = apply_filters( 'magic_login_mail_input_size', 17 );
@@ -106,11 +106,19 @@ class MagicLoginMail {
 			$html .= '<form action="' . get_the_permalink() . '" method="post">';
 			$html .= '<p>';
 			$html .= '<label for="magic_user_email" class="' . esc_attr( $label_class_name ) . '">' . esc_html( $label ) . '</label>';
-			$html .= '<input type="text" inputmode="url" pattern="[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" name="magic_user_email" id="magic_user_email" class="' . esc_attr( $input_class_name ) . '" value="' . esc_attr( $account_email ) . '" size="' . esc_attr( $input_size ) . '" />';
+			$html .= '<input type="text" 
+			
+			style="
+				margin: 15px;
+				display: inline-block;
+				width: 50%;"
+			placeholder="Email address from your Facebook account"
+			inputmode="url" pattern="[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$" name="magic_user_email" id="magic_user_email" class="' . esc_attr( $input_class_name ) . '" value="' . esc_attr( $account_email ) . '" size="' . esc_attr( $input_size ) . '" />';
 			$html .= '<input type="submit" name="magic-submit" id="magic-submit" class="' . esc_attr( $submit_class_name ) . '" value="' . esc_attr__( 'Log In', 'magic-login-mail' ) . '" />';
 			$html .= '</p>';
 			$html .= wp_nonce_field( 'magic_login_request', 'nonce' );
 			$html .= '</form>';
+			$html .= '<p>Please check your spam folder</p>';
 
 		}
 
